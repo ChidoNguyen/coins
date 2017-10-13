@@ -17,25 +17,87 @@ using std::endl;
 //									MakeItRain
 //Purpose: Generate the least amount of coins possible to give when given a value for change
 //Parameters: Coin_type{} array that stores coin denomination
+//			  our Purse{} is the type of coin we give  at each change total
+//			  Fatorial{} is our array where index # equals our change amount, i.e. change for 30 means we have a container from 0->30.
 //			  int Change , value of change to give out
-//Returns : The array we'll create inside the function to track coins given at each total
+// Returns : nothing explicitly returned, but our purse/factorial arrays will have updated values 
+// Credit to youtube video for help with understanding what needed to be returned: https://www.youtube.com/watch?v=NJuKJ8sasGk
+// I knew how to approach it just not what I should've  used to "memo-ized" the data
+// Turned out I could use the index of each "array location" as the value of change to be giving, rather than creating multi-dimensional array.
 /*/
 
 void MakeItRain(std::vector<int> &Coins, std::vector<int> &Purse, std::vector<int> &Factorial,int change) {
 	//std::vector<int> Factorial(change+1, 9999999);
-	Factorial[0] = 0;
-	for (int x = 0; x < Coins.size(); x++) {
-		for (int y = 1; y <= change; y++) {
-			if (y>= Coins[x]) {
-				if (Factorial[y - Coins[x]] + 1 < Factorial[y]) {
-					Factorial[y] = Factorial[y - Coins[x]] + 1;
-					Purse[y] = x;
+	Factorial[0] = 0; 								// our change given  at 0 is 0 
+	for (int x = 0; x < Coins.size(); x++) {						//This for loop iterates through our different coin denominations in the coins array
+		for (int y = 1; y <= change; y++) {							// This for loop is to find the smallest amount of coins possible to give at each "change" value from 1 to n being our change
+			if (y>= Coins[x]) {										// We can only make change for coins that are at least equal to our coin value and not less than change of 1 cant be given by coin 3
+				if (Factorial[y - Coins[x]] + 1 < Factorial[y]) {	//Look below function //
+					Factorial[y] = Factorial[y - Coins[x]] + 1;		
+					Purse[y] = x;									
 				}
 			}
 		}
 	}
 
 }
+// Function explanation  at line 32-35 :
+// our if condition checks to see if the new coin change count is less than the current. I.e. say for change of 6 we are currently storing a value of 3 (4 + 1 +1). We now check what happens if we use 
+// coin value 3, y = 6 so for  6-3 we look at Factorial [ 3] and if we've already done this change of 3 can be given with coin 3 so the index holds value 1 there, we get 1+1 = 2
+// now we compare if 2 coins is less than 3 coins given for change if it is we replace , and then update our "purse" that at change 6 we gave coin 3 as change. 
+/////////////////////////////////
+
+
+
+// 						WriteItOut
+// Function purpose: print out to output file coin denomination , change to be given, followed by amount of each coin given, and total coins given.
+//I.e. : 	coins 1 , 2 , 5
+//			#     0   0   2
+//			Change : 10 
+//			Total : 2 coins
+
+
+void WriteItOut(std::vector<int> &Coins , std::vector<int> &Purse, std::vector<int> &Factorial, std::fstream &outtie){
+	
+	
+	// Amount of each coin used //
+	int num_of_coins = Coins.size();
+	int change = Purse.size()-1;
+	std::vector<int> TmpCoins(num_of_coins);
+	
+	while(Purse[change] != -1){
+		int tmp = Purse[change];
+		TmpCoins[tmp] += 1;
+		change -= Coins[tmp];
+	}
+	
+	////////////////////////////////////////////////
+	outtie << "Change to give: " << Factorial.size() -1 << '\n';
+	
+	outtie << "Coin Value: 	";
+	while(!(Coins.empty())){
+		outtie << Coins.front() << "	";
+		Coins.erase(Coins.begin());
+	}
+	outtie << '\n';
+	
+	
+
+	outtie << "Coin Used: 		";
+	while(!(TmpCoins.empty())){
+		outtie << TmpCoins.front() << "	";
+		TmpCoins.erase(TmpCoins.begin());
+	}
+	outtie <<'\n';
+	change = Purse.size()-1;
+	outtie << "Value of change to be given: " << change << '\n';
+	
+	outtie << "Total coins given for change: " << Factorial[change] << '\n' << '\n';
+	
+	
+}
+
+
 
 
 int main() {
@@ -44,8 +106,8 @@ int main() {
 	int change;
 	int tmp;
 	doc.open("data.txt");
-	output.open("stooge.out", std::fstream::out);
-	std::vector<int> denom;
+	output.open("change.txt", std::fstream::out);
+	std::vector<int> denom; // coin values
 	
 
 
@@ -59,14 +121,14 @@ int main() {
 			do {				//Reads in change
 				doc >> change;
 			} while (doc.peek() != '\n' && !(doc.eof()));
-			std::vector<int> storage(change +1,-1);
-			std::vector<int> iter_change(change + 1, 9999999);
+			std::vector<int> storage(change +1,-1); // what coins are given at each change index
+			std::vector<int> iter_change(change + 1, 9999999); // # of coins used to provide change at each index
 			MakeItRain(denom, storage,iter_change, change);
-			// Add output to .out file
-			//output << '\n';
+			WriteItOut(denom, storage, iter_change,output);
 			denom.clear();
 			change = 9999999;
 		};
+		cout <<  "Data.txt analysis printed out to change.txt" <<endl;
 	}
 	else
 		cout << "data.txt failed to open" << endl;
