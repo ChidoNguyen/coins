@@ -27,7 +27,7 @@ using std::endl;
 /*/
 
 void MakeItRain(std::vector<int> &Coins, std::vector<int> &Purse, std::vector<int> &Factorial,int change) {
-	//std::vector<int> Factorial(change+1, 9999999);
+
 	Factorial[0] = 0; 								// our change given  at 0 is 0 
 	for (int x = 0; x < Coins.size(); x++) {						//This for loop iterates through our different coin denominations in the coins array
 		for (int y = 1; y <= change; y++) {							// This for loop is to find the smallest amount of coins possible to give at each "change" value from 1 to n being our change
@@ -83,7 +83,7 @@ void WriteItOut(std::vector<int> &Coins , std::vector<int> &Purse, std::vector<i
 	
 	
 
-	outtie << "Coin Used: 		";
+	outtie << "Coin Used: 	";
 	while(!(TmpCoins.empty())){
 		outtie << TmpCoins.front() << "	";
 		TmpCoins.erase(TmpCoins.begin());
